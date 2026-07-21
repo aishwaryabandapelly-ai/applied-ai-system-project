@@ -64,14 +64,30 @@ PROFILES = [
 
 
 def print_recommendations(songs, user_prefs, k=5) -> None:
+    """Print recommendations for one profile as a simple ASCII table."""
     recommendations = recommend_songs(user_prefs, songs, k=k)
+
+    headers = ["Rank", "Song Title", "Artist", "Score", "Reasons"]
+    rows = []
     for rank, (song, score, explanation) in enumerate(recommendations, start=1):
-        print(f"{rank}. {song['title']} by {song['artist']}")
-        print(f"   Score: {score:.2f}")
-        print("   Reasons:")
-        for reason in explanation.split(", "):
-            print(f"   - {reason}")
-        print()
+        reasons = explanation.replace(", ", "; ")
+        rows.append([str(rank), song["title"], song["artist"], f"{score:.2f}", reasons])
+
+    widths = [len(header) for header in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            widths[i] = max(widths[i], len(cell))
+
+    def format_row(row):
+        return " | ".join(cell.ljust(widths[i]) for i, cell in enumerate(row))
+
+    separator = "-+-".join("-" * width for width in widths)
+
+    print(format_row(headers))
+    print(separator)
+    for row in rows:
+        print(format_row(row))
+    print()
 
 
 def main() -> None:
