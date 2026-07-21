@@ -121,13 +121,47 @@ def score_song(user_prefs: Dict, song: Dict, mode: str = "balanced") -> Tuple[fl
 def recommend_songs(
     user_prefs: Dict, songs: List[Dict], k: int = 5, mode: str = "balanced"
 ) -> List[Tuple[Dict, float, str]]:
-    """Rank songs by score and return the top recommendations, using the given scoring mode."""
+    """Rank songs by score and return the top recommendations, using the given scoring mode.
+
+    Optional Challenge 3: a diversity penalty is applied while building the final
+    list so the top recommendations are not all the same artist or genre. The base
+    scoring in score_song is left unchanged; the penalty is only applied here.
+    """
+    # Step 1 + 2: calculate base scores, then sort songs by base score (highest first).
     scored_songs = []
     for song in songs:
         score, reasons = score_song(user_prefs, song, mode=mode)
-        explanation = ", ".join(reasons)
-        scored_songs.append((song, score, explanation))
+        scored_songs.append((song, score, reasons))
 
     ranked_songs = sorted(scored_songs, key=lambda item: item[1], reverse=True)
 
-    return ranked_songs[:k]
+    # Step 3: build the final top-k list one song at a time, remembering which
+    # genres and artists we've already picked so we can penalize repeats.
+    recommendations = []
+    seen_genres = set()
+    seen_artists = set()
+
+    for song, base_score, reasons in ranked_songs:
+        if len(recommendations) >= k:
+            break
+
+        # Step 4 + 5: penalize a song whose genre or artist is already represented.
+        adjusted_score = base_score
+        adjusted_reasons = list(reasons)
+
+        if song["genre"] in seen_genres:
+            adjusted_score -= 0.25
+            adjusted_reasons.append("diversity penalty: repeated genre (-0.25)")
+
+        if song["artist"] in seen_artists:
+            adjusted_score -= 0.50
+            adjusted_reasons.append("diversity penalty: repeated artist (-0.50)")
+
+        # Step 6: keep the adjusted score in the final recommendation list.
+        explanation = ", ".join(adjusted_reasons)
+        recommendations.append((song, adjusted_score, explanation))
+
+        seen_genres.add(song["genre"])
+        seen_artists.add(song["artist"])
+
+    return recommendations

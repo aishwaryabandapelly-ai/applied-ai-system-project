@@ -164,6 +164,32 @@ Replaced the bulleted CLI output in `src/main.py` with a lightweight ASCII table
 
 ---
 
+## Optional Challenge 3: Diversity and Fairness Logic
+
+**Prompt/workflow:** Asked Claude to add a simple diversity penalty that reduces filter bubbles by penalizing a song if its artist or genre already appears among the already-selected top recommendations. The base scoring in `score_song` had to stay untouched — the penalty is applied only while assembling the final list — and the mode system (`balanced`, `genre_first`, `mood_first`, `energy_focused`) plus the advanced features (`popularity` bonus, `instrumentalness` bonus) all had to keep working.
+
+**What diversity penalty was added:** The change lives entirely in `recommend_songs` in `src/recommender.py`. The flow is:
+1. Calculate base scores for every song with `score_song` (unchanged).
+2. Sort all songs by base score, highest first.
+3. Build the top-k list one song at a time, tracking the genres and artists already picked in two `set`s.
+4. When considering a song:
+   - if its genre is already in the selected set → subtract `0.25`
+   - if its artist is already in the selected set → subtract `0.50`
+5. Matching reasons are appended when a penalty applies: `diversity penalty: repeated genre (-0.25)` and `diversity penalty: repeated artist (-0.50)`.
+6. The adjusted (post-penalty) score is what goes into the returned recommendation list.
+
+The penalty is greedy: songs are considered in base-score order and each penalty is measured against the songs already chosen, so the very first (highest-scoring) song is never penalized. Since an artist repeat almost always also means a genre repeat, a repeated artist can stack both penalties (`-0.75` total), which correctly punishes the least diverse picks the hardest.
+
+**Why this helps reduce filter bubbles:** Without a penalty, a user whose favorite artist or genre dominates the catalog can get a top-5 that's all the same artist or all one genre — a classic filter bubble that never exposes them to anything new. By docking repeats, the list still leads with the strongest match but nudges later slots toward different artists and genres, so recommendations stay relevant while broadening variety.
+
+**What I manually verified:**
+- `.venv/bin/python -m pytest` still passes (2/2) — the existing `score_song` / `recommend_songs` signatures and default `balanced` behavior are intact.
+- `python -m src.main` runs cleanly and the penalty reasons now appear in the output. For the **Chill Lofi** profile, `Focus Flow` (LoRoom) shows both penalties — `repeated genre (-0.25)` and `repeated artist (-0.50)` — because `Midnight Coding` (also LoRoom, also lofi) was already selected above it.
+- Confirmed the base scores are unchanged: rank-1 songs (which are never penalized) still show the same scores as before, e.g. `Sunrise City 5.58` for High-Energy Pop and `Library Rain 5.79` for Chill Lofi, matching `model_card.md`.
+- Confirmed the greedy ordering: in **Deep Intense Rock**, `Sunrise City` drops to `2.28` after a `-0.25` genre penalty and now sits just below the unpenalized `Concrete Dreams (2.44)`, showing the penalty genuinely shifts the adjusted scores.
+
+---
+
 ## Agentic Workflow (SF8)
 
 > Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.
