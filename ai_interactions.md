@@ -133,6 +133,12 @@ A single song is read from `data/songs.csv` and paired with the current `UserPro
 
 ---
 
+## Optional Challenge 4: Visual Summary Table
+
+Replaced the bulleted CLI output in `src/main.py` with a lightweight ASCII table (Rank, Song Title, Artist, Score, Reasons), built using only Python's string formatting — no new dependency. Column widths are computed dynamically from the data, and the Reasons column joins the individual reasons with semicolons instead of wrapping across multiple lines, keeping each recommendation on one row. Scoring logic in `recommender.py` was not touched; this was a pure CLI presentation change, and the recommender is still fully CLI-first (`python -m src.main`).
+
+---
+
 ## Agentic Workflow (SF8)
 
 > Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.
