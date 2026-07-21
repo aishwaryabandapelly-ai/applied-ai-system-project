@@ -35,6 +35,37 @@ energy level is close to your target energy."
 
 ---
 
+## Phase 2 Step 1: Dataset Expansion
+
+I added 8 new fictional songs (IDs 11–18) to `data/songs.csv`, introducing genres not previously represented: hip hop, folk, electronic, classical, r&b, metal, reggae, and country. This improves diversity because the original dataset leaned heavily toward `lofi` and `pop` genres and `chill`/`happy`/`intense` moods — the new songs add moods like confident, nostalgic, euphoric, melancholy, romantic, angry, uplifting, and wistful, and widen the numeric range of energy and acousticness values so the scoring rules have more contrast to work with.
+
+---
+
+## Phase 2 Step 2: User Profile Design
+
+For my first test profile, I chose favorite_genre="lofi", favorite_mood="chill", target_energy=0.35, likes_acoustic=True — a "quiet focus listener" persona. This profile exercises all four scoring rules and produces a clear separation between matching songs, such as low-energy acoustic lofi/chill tracks, and mismatched songs, such as high-energy low-acousticness rock or metal tracks. I also plan to test a contrasting high-energy, non-acoustic profile to confirm the scorer behaves correctly across the full range.
+
+---
+
+## Phase 2 Step 3: Scoring Logic Design
+
+The final scoring recipe:
+
+- Genre match: `+2.0` points if `song.genre == user.favorite_genre`, else `0`
+- Mood match: `+1.0` point if `song.mood == user.favorite_mood`, else `0`
+- Energy closeness: `energy_score = 1 - abs(song.energy - user.target_energy)`, range 0–1
+- Acoustic preference: `song.acousticness` if `likes_acoustic` is True, else `1 - song.acousticness`, range 0–1
+
+Final formula:
+
+`final_score = genre_score + mood_score + energy_score + acoustic_score`
+
+Maximum possible score is `5.0` (2.0 + 1.0 + 1.0 + 1.0).
+
+Scoring logic and ranking logic are kept separate: scoring logic calculates a `final_score` for one song against the user profile at a time, while ranking logic sorts all of the scored songs from highest to lowest score and returns the top results as recommendations.
+
+---
+
 ## Agentic Workflow (SF8)
 
 > Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.
