@@ -71,9 +71,28 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     Scores a single song against user preferences.
     Required by recommend_songs() and src/main.py
     """
-    # TODO: Implement scoring logic using your Algorithm Recipe from Phase 2.
-    # Expected return format: (score, reasons)
-    return []
+    reasons = []
+
+    genre_score = 2.0 if song["genre"] == user_prefs["favorite_genre"] else 0.0
+    if genre_score:
+        reasons.append(f"genre match (+{genre_score:.1f})")
+
+    mood_score = 1.0 if song["mood"] == user_prefs["favorite_mood"] else 0.0
+    if mood_score:
+        reasons.append(f"mood match (+{mood_score:.1f})")
+
+    energy_score = 1 - abs(song["energy"] - user_prefs["target_energy"])
+    reasons.append(f"energy closeness (+{energy_score:.2f})")
+
+    if user_prefs["likes_acoustic"]:
+        acoustic_score = song["acousticness"]
+    else:
+        acoustic_score = 1 - song["acousticness"]
+    reasons.append(f"acoustic preference (+{acoustic_score:.2f})")
+
+    final_score = genre_score + mood_score + energy_score + acoustic_score
+
+    return final_score, reasons
 
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
