@@ -154,6 +154,16 @@ Replaced the bulleted CLI output in `src/main.py` with a lightweight ASCII table
 
 ---
 
+## Optional Challenge 2: Multiple Scoring Modes
+
+**Chosen design:** A simple Strategy-style approach without a full class hierarchy — `get_scoring_weights(mode)` is a small helper that returns a dict of multipliers (`genre`, `mood`, `energy`, `acoustic`) for a given mode name (`"balanced"`, `"genre_first"`, `"mood_first"`, `"energy_focused"`), and `score_song` just looks up the weights and multiplies them into the same formula it already had. This keeps the "strategy" swappable through a plain string + dict lookup instead of introducing separate strategy classes, which felt like the right amount of complexity for a beginner project. `recommend_songs` gained an optional `mode="balanced"` parameter that it forwards straight to `score_song`, so nothing about the calling code needs to branch on mode itself.
+
+**How AI helped brainstorm it:** Asked Claude how to add named scoring "modes" without duplicating the whole scoring function four times. It suggested keeping one formula and parameterizing it with a weights dict per mode (Strategy pattern in its simplest form — swap the data, not the code path), rather than writing a separate `score_song_genre_first()`, `score_song_mood_first()`, etc. It also pointed out that `"balanced"` needed to reproduce the exact original point values (genre 2.0, mood 1.0, energy ×1, acoustic ×1) so nothing already documented in `model_card.md` would silently change.
+
+**What I manually verified:** Ran `python -m src.main` and confirmed the `balanced` mode's scores for the High-Energy Pop profile still exactly match the scores already written down in `model_card.md` (Sunrise City 5.58, Gym Hero 4.58, etc.) — proving the refactor didn't change default behavior. Then compared `balanced` vs `energy_focused` on the same profile and confirmed the ranking actually shifts (`Storm Runner` moves into the top 5, displacing `Concrete Dreams`), so the weight multiplier is genuinely affecting results and not just cosmetic. Also confirmed `python -m pytest` still passes (2/2), since `score_song(user_prefs, song)` and `recommend_songs(user_prefs, songs, k=5)` both still work with no `mode` argument at all, defaulting to `"balanced"`.
+
+---
+
 ## Agentic Workflow (SF8)
 
 > Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.

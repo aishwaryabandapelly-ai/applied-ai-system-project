@@ -67,25 +67,36 @@ def load_songs(csv_path: str) -> List[Dict]:
     print(f"Loaded {len(songs)} songs from {csv_path}")
     return songs
 
-def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
-    """Calculate a recommendation score and reasons for one song."""
+def get_scoring_weights(mode: str) -> Dict[str, float]:
+    """Return the genre/mood/energy/acoustic multipliers for a ranking strategy."""
+    scoring_modes = {
+        "balanced": {"genre": 2.0, "mood": 1.0, "energy": 1.0, "acoustic": 1.0},
+        "genre_first": {"genre": 3.0, "mood": 1.0, "energy": 1.0, "acoustic": 1.0},
+        "mood_first": {"genre": 2.0, "mood": 2.0, "energy": 1.0, "acoustic": 1.0},
+        "energy_focused": {"genre": 2.0, "mood": 1.0, "energy": 2.0, "acoustic": 1.0},
+    }
+    return scoring_modes.get(mode, scoring_modes["balanced"])
+
+def score_song(user_prefs: Dict, song: Dict, mode: str = "balanced") -> Tuple[float, List[str]]:
+    """Calculate a recommendation score and reasons for one song, using the given scoring mode."""
+    weights = get_scoring_weights(mode)
     reasons = []
 
-    genre_score = 2.0 if song["genre"] == user_prefs["favorite_genre"] else 0.0
+    genre_score = weights["genre"] if song["genre"] == user_prefs["favorite_genre"] else 0.0
     if genre_score:
         reasons.append(f"genre match (+{genre_score:.1f})")
 
-    mood_score = 1.0 if song["mood"] == user_prefs["favorite_mood"] else 0.0
+    mood_score = weights["mood"] if song["mood"] == user_prefs["favorite_mood"] else 0.0
     if mood_score:
         reasons.append(f"mood match (+{mood_score:.1f})")
 
-    energy_score = 1 - abs(song["energy"] - user_prefs["target_energy"])
+    energy_score = weights["energy"] * (1 - abs(song["energy"] - user_prefs["target_energy"]))
     reasons.append(f"energy closeness (+{energy_score:.2f})")
 
     if user_prefs["likes_acoustic"]:
-        acoustic_score = song["acousticness"]
+        acoustic_score = weights["acoustic"] * song["acousticness"]
     else:
-        acoustic_score = 1 - song["acousticness"]
+        acoustic_score = weights["acoustic"] * (1 - song["acousticness"])
     reasons.append(f"acoustic preference (+{acoustic_score:.2f})")
 
     # popularity and instrumentalness are the only new features scored for now;
@@ -107,11 +118,13 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     return final_score, reasons
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """Rank songs by score and return the top recommendations."""
+def recommend_songs(
+    user_prefs: Dict, songs: List[Dict], k: int = 5, mode: str = "balanced"
+) -> List[Tuple[Dict, float, str]]:
+    """Rank songs by score and return the top recommendations, using the given scoring mode."""
     scored_songs = []
     for song in songs:
-        score, reasons = score_song(user_prefs, song)
+        score, reasons = score_song(user_prefs, song, mode=mode)
         explanation = ", ".join(reasons)
         scored_songs.append((song, score, explanation))
 

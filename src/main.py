@@ -63,9 +63,9 @@ PROFILES = [
 ]
 
 
-def print_recommendations(songs, user_prefs, k=5) -> None:
+def print_recommendations(songs, user_prefs, k=5, mode="balanced") -> None:
     """Print recommendations for one profile as a simple ASCII table."""
-    recommendations = recommend_songs(user_prefs, songs, k=k)
+    recommendations = recommend_songs(user_prefs, songs, k=k, mode=mode)
 
     headers = ["Rank", "Song Title", "Artist", "Score", "Reasons"]
     rows = []
@@ -98,8 +98,18 @@ def main() -> None:
         print(f"Profile: {label}")
         print(f"  {user_prefs}")
         print("=" * 60)
-        print("Top recommendations:\n")
-        print_recommendations(songs, user_prefs, k=5)
+        print("Top recommendations (mode: balanced):\n")
+        print_recommendations(songs, user_prefs, k=5, mode="balanced")
+
+    # Optional Challenge 2: demonstrate switching scoring modes on one profile.
+    demo_label, demo_prefs = PROFILES[0]
+    print("=" * 60)
+    print(f"Scoring Mode Comparison — Profile: {demo_label}")
+    print(f"  {demo_prefs}")
+    print("=" * 60)
+    for mode in ("balanced", "energy_focused"):
+        print(f"Mode: {mode}\n")
+        print_recommendations(songs, demo_prefs, k=5, mode=mode)
 
 
 if __name__ == "__main__":
