@@ -70,6 +70,8 @@ Prompts:
 - Cases where the system overfits to one preference  
 - Ways the scoring might unintentionally favor some users  
 
+The scoring formula may over-prioritize genre by giving it the largest fixed bonus (+2.0), so a song can rank highly even when its mood, energy, and acousticness are not a perfect fit. Because the catalog is small, with only a limited number of songs and some genres or moods represented only once, certain user profiles may not have many strong candidates to choose from. The `likes_acoustic` field is also too simple because it forces every user into a True/False preference, while real acoustic preference is usually more flexible. The weight-shift experiment showed that changing feature weights can significantly change the rankings, meaning the recommender is sensitive to design choices and could accidentally override a user's stated preference.
+
 ---
 
 ## 7. Evaluation  
