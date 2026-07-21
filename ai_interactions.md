@@ -139,6 +139,21 @@ Replaced the bulleted CLI output in `src/main.py` with a lightweight ASCII table
 
 ---
 
+## Optional Challenge 1: Advanced Song Features
+
+**Prompt/workflow:** Asked Claude to add 5 new song attributes (`popularity`, `release_decade`, `language`, `is_explicit`, `instrumentalness`) to `data/songs.csv`, wire up type conversion for them in `load_songs`, and add scoring for only two of them (`popularity` and `instrumentalness`) so the formula stayed simple — `language`, `release_decade`, and `is_explicit` should load correctly but stay unused in scoring for now.
+
+**What AI changed:**
+- `data/songs.csv`: added the 5 new columns and filled in plausible values for all 18 songs (popularity 0–100, release_decade one of 1980/1990/2000/2010/2020, language one of English/Spanish/Korean/Hindi/Instrumental, is_explicit True/False, instrumentalness 0.0–1.0).
+- `src/recommender.py` → `load_songs`: added conversions for `popularity` (int), `release_decade` (int), `instrumentalness` (float), and `is_explicit` (bool, converted from the `"True"`/`"False"` string rather than relying on Python's truthy string check).
+- `src/recommender.py` → `score_song`: added `popularity_score = song["popularity"] / 100` (max +1.0) and `instrumental_score = song["instrumentalness"] * 0.5` (max +0.5) to `final_score`, with matching reason strings (`"popularity bonus (+0.82)"`, `"instrumentalness bonus (+0.30)"`). The original genre/mood/energy/acoustic scoring is untouched. New max possible score is 6.5 (5.0 original + 1.0 + 0.5).
+
+**What I manually verified:** confirmed `is_explicit` used an explicit string comparison (`.strip().lower() == "true"`) rather than `bool(row["is_explicit"])`, since a raw `bool("False")` would incorrectly evaluate to `True` in Python. Also spot-checked that `language`, `release_decade`, and `is_explicit` load correctly onto each song dict but never appear in `score_song`'s math, per the requirement to keep them unused for now.
+
+**Test results:** `python -m pytest` passed (2/2), and `python -m src.main` printed `Loaded 18 songs from data/songs.csv` and ran cleanly across all profiles, with `popularity bonus` and `instrumentalness bonus` now showing in each recommendation's reasons.
+
+---
+
 ## Agentic Workflow (SF8)
 
 > Document your experience using an AI agent (e.g., Cursor Agent, Claude, Copilot) to make multi-step changes autonomously.

@@ -58,6 +58,10 @@ def load_songs(csv_path: str) -> List[Dict]:
             row["valence"] = float(row["valence"])
             row["danceability"] = float(row["danceability"])
             row["acousticness"] = float(row["acousticness"])
+            row["popularity"] = int(row["popularity"])
+            row["release_decade"] = int(row["release_decade"])
+            row["instrumentalness"] = float(row["instrumentalness"])
+            row["is_explicit"] = row["is_explicit"].strip().lower() == "true"
             songs.append(row)
 
     print(f"Loaded {len(songs)} songs from {csv_path}")
@@ -84,7 +88,22 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
         acoustic_score = 1 - song["acousticness"]
     reasons.append(f"acoustic preference (+{acoustic_score:.2f})")
 
-    final_score = genre_score + mood_score + energy_score + acoustic_score
+    # popularity and instrumentalness are the only new features scored for now;
+    # language, release_decade, and is_explicit are loaded but not used in scoring yet.
+    popularity_score = song["popularity"] / 100
+    reasons.append(f"popularity bonus (+{popularity_score:.2f})")
+
+    instrumental_score = song["instrumentalness"] * 0.5
+    reasons.append(f"instrumentalness bonus (+{instrumental_score:.2f})")
+
+    final_score = (
+        genre_score
+        + mood_score
+        + energy_score
+        + acoustic_score
+        + popularity_score
+        + instrumental_score
+    )
 
     return final_score, reasons
 
