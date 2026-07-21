@@ -85,6 +85,10 @@ Prompts:
 
 No need for numeric metrics unless you created some.
 
+### High-Energy Pop Result Explanation
+
+For the High-Energy Pop profile (`favorite_genre="pop"`, `favorite_mood="happy"`, `target_energy=0.85`, `likes_acoustic=False`), the top recommendation was "Sunrise City" by Neon Echo, scoring 4.79 out of a possible 5.0. This song matched both categorical preferences (genre +2.0, mood +1.0) and scored well on both continuous features (energy closeness +0.97, since its energy of 0.82 sits close to the 0.85 target; acoustic preference +0.82, since its low acousticness of 0.18 suits a user who dislikes acoustic songs). All four components reinforced each other rather than conflicting, which made this an intuitive, easy-to-explain #1 result and confirms the scoring formula behaves as expected in the straightforward case.
+
 ---
 
 ## 8. Future Work  
