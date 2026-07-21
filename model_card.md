@@ -61,7 +61,7 @@ Prompts:
 - Did you add or remove data  
 - Are there parts of musical taste missing in the dataset  
 
-The dataset lives in `data/songs.csv` and currently has 10 songs (it will grow to 18 once the additional fictional songs drafted for Phase 2 are pasted in). Each song has a title, an artist, a genre tag, a mood tag, and five numeric features: energy, tempo_bpm, valence, danceability, and acousticness. All of the songs and artists are fictional and made up for this project — none of them are real tracks. The dataset is intentionally small and sample-based rather than a realistic catalog, so some genres and moods are represented only once or twice, and parts of musical taste (tempo, valence, danceability, lyrics, instrumentation) aren't factored into the scoring yet even though the data for some of them already exists.
+The dataset lives in `data/songs.csv` and now has 18 songs. The original starter set had 10 songs; I expanded it with 8 additional fictional songs covering genres the original catalog didn't have — hip hop, folk, electronic, classical, r&b, metal, reggae, and country. Each song has a title, an artist, a genre tag, a mood tag, and five numeric features: energy, tempo_bpm, valence, danceability, and acousticness. All of the songs and artists are fictional and made up for this project — none of them are real tracks. The dataset is still intentionally small and sample-based rather than a realistic catalog, so some genres and moods are represented only once or twice, and parts of musical taste (tempo, valence, danceability, lyrics, instrumentation) aren't factored into the scoring yet even though the data for some of them already exists.
 
 ---
 
@@ -114,27 +114,13 @@ I ran `python -m src.main` against four kinds of user profiles to see how the re
 **1. High-Energy Pop** (`favorite_genre="pop"`, `favorite_mood="happy"`, `target_energy=0.85`, `likes_acoustic=False`)
 
 ```text
-1. Sunrise City by Neon Echo
-   Score: 4.79
-   Reasons:
-   - genre match (+2.0)
-   - mood match (+1.0)
-   - energy closeness (+0.97)
-   - acoustic preference (+0.82)
-
-2. Gym Hero by Max Pulse
-   Score: 3.87
-   Reasons:
-   - genre match (+2.0)
-   - energy closeness (+0.92)
-   - acoustic preference (+0.95)
-
-3. Rooftop Lights by Indigo Parade
-   Score: 2.56
-   Reasons:
-   - mood match (+1.0)
-   - energy closeness (+0.91)
-   - acoustic preference (+0.65)
+Rank | Song Title     | Artist        | Score | Reasons
+-----+----------------+---------------+-------+---------------------------------------------------------------------------------------------
+1    | Sunrise City   | Neon Echo     | 4.79  | genre match (+2.0); mood match (+1.0); energy closeness (+0.97); acoustic preference (+0.82)
+2    | Gym Hero       | Max Pulse     | 3.87  | genre match (+2.0); energy closeness (+0.92); acoustic preference (+0.95)
+3    | Rooftop Lights | Indigo Parade | 2.56  | mood match (+1.0); energy closeness (+0.91); acoustic preference (+0.65)
+4    | Pulse Horizon  | Kilowatt      | 1.87  | energy closeness (+0.90); acoustic preference (+0.97)
+5    | Iron Verdict   | Grave Circuit | 1.86  | energy closeness (+0.88); acoustic preference (+0.98)
 ```
 
 This one makes sense at a glance: the winner, "Sunrise City," is literally tagged `pop`/`happy` in the data, so it collects both fixed bonuses, and it also happens to be high-energy and not very acoustic — exactly what this listener asked for. Everything lined up, so the #1 pick feels obviously correct.
@@ -142,28 +128,13 @@ This one makes sense at a glance: the winner, "Sunrise City," is literally tagge
 **2. Chill Lofi** (`favorite_genre="lofi"`, `favorite_mood="chill"`, `target_energy=0.35`, `likes_acoustic=True`)
 
 ```text
-1. Library Rain by Paper Lanterns
-   Score: 4.86
-   Reasons:
-   - genre match (+2.0)
-   - mood match (+1.0)
-   - energy closeness (+1.00)
-   - acoustic preference (+0.86)
-
-2. Midnight Coding by LoRoom
-   Score: 4.64
-   Reasons:
-   - genre match (+2.0)
-   - mood match (+1.0)
-   - energy closeness (+0.93)
-   - acoustic preference (+0.71)
-
-3. Focus Flow by LoRoom
-   Score: 3.73
-   Reasons:
-   - genre match (+2.0)
-   - energy closeness (+0.95)
-   - acoustic preference (+0.78)
+Rank | Song Title          | Artist         | Score | Reasons
+-----+---------------------+----------------+-------+---------------------------------------------------------------------------------------------
+1    | Library Rain        | Paper Lanterns | 4.86  | genre match (+2.0); mood match (+1.0); energy closeness (+1.00); acoustic preference (+0.86)
+2    | Midnight Coding     | LoRoom         | 4.64  | genre match (+2.0); mood match (+1.0); energy closeness (+0.93); acoustic preference (+0.71)
+3    | Focus Flow          | LoRoom         | 3.73  | genre match (+2.0); energy closeness (+0.95); acoustic preference (+0.78)
+4    | Spacewalk Thoughts  | Orbit Bloom    | 2.85  | mood match (+1.0); energy closeness (+0.93); acoustic preference (+0.92)
+5    | Coffee Shop Stories | Slow Stereo    | 1.87  | energy closeness (+0.98); acoustic preference (+0.89)
 ```
 
 Same story here — a soft, low-energy, mostly-acoustic song ("Library Rain") that's already tagged `lofi`/`chill` comes out on top with a near-perfect score. Compared to the High-Energy Pop result, the ranking "shape" is the same (a clean top pick everyone would agree with), just built from opposite raw numbers — low energy and high acousticness instead of high energy and low acousticness. That's a good sign: the formula treats "closeness to target" the same way regardless of which direction the target points.
@@ -171,20 +142,13 @@ Same story here — a soft, low-energy, mostly-acoustic song ("Library Rain") th
 **3. Deep Intense Rock** (`favorite_genre="rock"`, `favorite_mood="intense"`, `target_energy=0.90`, `likes_acoustic=False`)
 
 ```text
-1. Storm Runner by Voltline
-   Score: 4.89
-   Reasons:
-   - genre match (+2.0)
-   - mood match (+1.0)
-   - energy closeness (+0.99)
-   - acoustic preference (+0.90)
-
-2. Gym Hero by Max Pulse
-   Score: 2.92
-   Reasons:
-   - mood match (+1.0)
-   - energy closeness (+0.97)
-   - acoustic preference (+0.95)
+Rank | Song Title    | Artist        | Score | Reasons
+-----+---------------+---------------+-------+---------------------------------------------------------------------------------------------
+1    | Storm Runner  | Voltline      | 4.89  | genre match (+2.0); mood match (+1.0); energy closeness (+0.99); acoustic preference (+0.90)
+2    | Gym Hero      | Max Pulse     | 2.92  | mood match (+1.0); energy closeness (+0.97); acoustic preference (+0.95)
+3    | Pulse Horizon | Kilowatt      | 1.92  | energy closeness (+0.95); acoustic preference (+0.97)
+4    | Iron Verdict  | Grave Circuit | 1.91  | energy closeness (+0.93); acoustic preference (+0.98)
+5    | Sunrise City  | Neon Echo     | 1.74  | energy closeness (+0.92); acoustic preference (+0.82)
 ```
 
 "Storm Runner" wins clearly and correctly — but this also reveals a catalog limitation: it's the *only* `rock`-tagged song in the whole dataset. There's no runner-up that also matches genre, so anyone with this taste profile only ever gets one "real" match no matter how the recommender is tuned. The #2 pick, "Gym Hero," is a `pop` song that only sneaks in because it happens to be high-energy — a plausible backup, but not a genuine rock recommendation.
@@ -192,33 +156,13 @@ Same story here — a soft, low-energy, mostly-acoustic song ("Library Rain") th
 **4. Edge case — Conflicting Signals** (`favorite_genre="rock"`, `favorite_mood="chill"`, `target_energy=0.15`, `likes_acoustic=True` — a listener who says they like rock, but everything else about them points toward soft, quiet music)
 
 ```text
-1. Spacewalk Thoughts by Orbit Bloom
-   Score: 2.79
-   Reasons:
-   - mood match (+1.0)
-   - energy closeness (+0.87)
-   - acoustic preference (+0.92)
-
-2. Library Rain by Paper Lanterns
-   Score: 2.66
-   Reasons:
-   - mood match (+1.0)
-   - energy closeness (+0.80)
-   - acoustic preference (+0.86)
-
-3. Midnight Coding by LoRoom
-   Score: 2.44
-   Reasons:
-   - mood match (+1.0)
-   - energy closeness (+0.73)
-   - acoustic preference (+0.71)
-
-4. Storm Runner by Voltline
-   Score: 2.34
-   Reasons:
-   - genre match (+2.0)
-   - energy closeness (+0.24)
-   - acoustic preference (+0.10)
+Rank | Song Title         | Artist           | Score | Reasons
+-----+--------------------+------------------+-------+--------------------------------------------------------------------------
+1    | Spacewalk Thoughts | Orbit Bloom      | 2.79  | mood match (+1.0); energy closeness (+0.87); acoustic preference (+0.92)
+2    | Library Rain       | Paper Lanterns   | 2.66  | mood match (+1.0); energy closeness (+0.80); acoustic preference (+0.86)
+3    | Midnight Coding    | LoRoom           | 2.44  | mood match (+1.0); energy closeness (+0.73); acoustic preference (+0.71)
+4    | Storm Runner       | Voltline         | 2.34  | genre match (+2.0); energy closeness (+0.24); acoustic preference (+0.10)
+5    | Glass Cathedral    | Solene Marchetti | 1.85  | energy closeness (+0.90); acoustic preference (+0.95)
 ```
 
 This is the surprise. "Storm Runner" is the *only* song in the whole catalog that matches this listener's stated favorite genre (`rock`), yet it drops to 4th place, beaten out by three lofi/ambient songs that don't match genre at all. The reason is plain arithmetic: the genre bonus (+2.0) is fixed, but "Storm Runner" is a loud, non-acoustic song, so it loses almost a full point on energy and 0.9 of a point on acousticness — enough to sink below songs that match none of the categorical preferences but fit the mood/energy/acoustic numbers closely. In plain terms: a listener who explicitly says "I like rock" can end up not being shown the one rock song available, because the math lets quieter, non-rock songs out-earn it on the numeric side. That's a real limitation — the formula can quietly override an explicit, stated preference.
