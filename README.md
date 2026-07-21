@@ -17,24 +17,43 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-This recommender uses a simple content-based scoring system: it compares each song's attributes against the user's taste profile and gives every song a score, then returns the highest-scoring songs.
+This recommender uses a simple content-based scoring system. Each song has a set of attributes (`genre`, `mood`, `energy`, `acousticness`), and the user has a taste profile with matching preferences (`favorite_genre`, `favorite_mood`, `target_energy`, `likes_acoustic`). The system compares every song against the user's profile, turns that comparison into a single number, and recommends whichever songs score the highest — so a song moves from raw data into a recommendation purely by how closely its attributes line up with what the user said they want.
 
-Some prompts to answer:
+The starter catalog was also expanded with additional fictional songs spanning genres and moods the original dataset didn't cover (e.g. hip hop, folk, electronic, classical, r&b, metal, reggae, country), so the recommender has more variety to distinguish between when scoring.
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-  - `genre`, `mood`, `energy`, and `acousticness`.
-- What information does your `UserProfile` store
-  - `favorite_genre`, `favorite_mood`, `target_energy`, and `likes_acoustic`.
-- How does your `Recommender` compute a score for each song
-  - Each song gets a `final_score` made up of four parts:
-    - **Genre match** — `+2` points if `song.genre == user.favorite_genre`. Genre is one of the clearest signals of music preference.
-    - **Mood match** — `+2` points if `song.mood == user.favorite_mood`. Mood directly represents the "vibe" the user wants.
-    - **Energy closeness** — `energy_score = 1 - abs(song.energy - user.target_energy)`. A song doesn't need an exact energy match, but closer energy should rank higher.
-    - **Acoustic preference** — if `likes_acoustic` is `True`, `acoustic_score = song.acousticness`; if `False`, `acoustic_score = 1 - song.acousticness`. This captures the texture/production style the user prefers.
-    - `final_score = genre_score + mood_score + energy_score + acoustic_score`, where `genre_score` and `mood_score` are each either `2` or `0`, and `energy_score` / `acoustic_score` are each between `0` and `1`.
-- How do you choose which songs to recommend
-  - Every song in the catalog is scored, then sorted from highest to lowest `final_score`. The top `k` songs are returned, each with a short explanation such as: *"Recommended because it matches your favorite genre and mood, and its energy level is close to your target energy."*
+### Example User Profile
+
+```python
+user_profile = {
+    "favorite_genre": "lofi",
+    "favorite_mood": "chill",
+    "target_energy": 0.35,
+    "likes_acoustic": True
+}
+```
+
+### Algorithm Recipe
+
+- **Genre match** — `+2.0` points if `song.genre == user.favorite_genre`, else `0`.
+- **Mood match** — `+1.0` point if `song.mood == user.favorite_mood`, else `0`.
+- **Energy closeness** — `energy_score = 1 - abs(song.energy - user.target_energy)`, so a song doesn't need to match the target energy exactly, just be close to it (range `0`–`1`).
+- **Acoustic preference** — if `likes_acoustic` is `True`, `acoustic_score = song.acousticness`; if `False`, `acoustic_score = 1 - song.acousticness` (range `0`–`1`).
+
+Final score:
+
+```python
+final_score = genre_score + mood_score + energy_score + acoustic_score
+```
+
+The maximum possible score is `5.0` (`2.0 + 1.0 + 1.0 + 1.0`).
+
+### Ranking Rule
+
+Every song in the catalog is scored the same way, one at a time. Once all songs have a `final_score`, the full list is sorted from highest to lowest, and the Top K songs are returned as recommendations.
+
+### Bias Note
+
+This system may over-prioritize genre and miss good songs that match the user's mood or energy but are from a different genre. It may also create a filter bubble by repeatedly recommending similar songs. Since the dataset is small, some genres and moods may be underrepresented, which can skew what the recommender is able to surface.
 
 ---
 
