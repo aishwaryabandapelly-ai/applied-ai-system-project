@@ -1,0 +1,67 @@
+%% TuneGuide AI - Explainable Music Recommendation Agent
+%% System architecture (existing recommender + planned agentic extension)
+
+flowchart TD
+    subgraph UI["User Interaction"]
+        REQ["Natural-language music request"]
+        PROF["User preference profile"]
+        OUT["Final output:<br/>ranked recs, scores,<br/>reliability, explanations"]
+        FB["Human feedback:<br/>like / dislike / correct"]
+    end
+
+    subgraph WF["Agentic Recommendation Workflow"]
+        GUARD["Input validation & guardrails:<br/>validate k, energy & prefs;<br/>handle missing/invalid inputs"]
+        AGENT["Recommendation agent:<br/>coordinate retrieve -> score -><br/>diversity -> check -> explain"]
+        RETR["Candidate retriever:<br/>search & filter by genre,<br/>mood, energy, features"]
+        SCORE["Scoring & ranking engine:<br/>preference-match score,<br/>scoring mode, rank"]
+        DIV["Diversity logic:<br/>reduce repeated<br/>artists / genres"]
+        EXPL["Explanation generator:<br/>evidence-based reasons<br/>from attributes & scores"]
+    end
+
+    subgraph DS["Data Source"]
+        CSV[("data/songs.csv")]
+    end
+
+    subgraph RT["Reliability & Testing"]
+        EVAL["Reliability evaluator:<br/>duplicates, explanation coverage,<br/>score validity, alignment, diversity"]
+        TEST["Automated testing:<br/>unit tests & reliability experiments<br/>(retriever, scorer, agent,<br/>guardrails, feedback, output)"]
+    end
+
+    LOG["Logging:<br/>records workflow stages & errors"]
+
+    %% Primary flow
+    REQ --> GUARD
+    PROF --> GUARD
+    GUARD --> AGENT
+    AGENT --> RETR
+    RETR --> CSV
+    CSV --> RETR
+    RETR --> SCORE
+    SCORE --> DIV
+    DIV --> EVAL
+    EVAL --> EXPL
+    EXPL --> OUT
+    OUT --> FB
+
+    %% Feedback loop
+    FB -->|updates profile| PROF
+    FB -->|influences next run| AGENT
+
+    %% Testing path
+    TEST -.-> GUARD
+    TEST -.-> RETR
+    TEST -.-> SCORE
+    TEST -.-> AGENT
+    TEST -.-> EVAL
+    TEST -.-> OUT
+
+    %% Logging touchpoints
+    GUARD -.-> LOG
+    AGENT -.-> LOG
+    RETR -.-> LOG
+    EVAL -.-> LOG
+
+    classDef data fill:#e8f0fe,stroke:#4285f4,color:#111;
+    classDef check fill:#fff4e5,stroke:#f5a623,color:#111;
+    class CSV data;
+    class EVAL,TEST check;
