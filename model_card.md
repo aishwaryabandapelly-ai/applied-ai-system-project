@@ -51,6 +51,15 @@ Each stage is a separate module coordinated by a recommendation agent, so compon
 
 ---
 
+### Retrieval Knowledge Sources (RAG stretch feature)
+
+Beyond `data/songs.csv`, the enhanced retrieval consults two hand-authored local knowledge sources before recommendations are generated:
+
+- `knowledge/genre_aliases.json` — maps informal genre spellings (e.g. `edm` → `electronic`) to canonical catalog genres.
+- `knowledge/listening_contexts.md` — maps listening contexts (studying, working out, ...) to supported recommendation attributes.
+
+These sources are small, hand-authored, and limited; incorrect or incomplete mappings can affect recommendations. They are used only to normalize genre aliases and to fill *missing* profile fields. Explicit user preferences always take priority over retrieved context, and unsupported aliases or contexts fail safely with no invented data.
+
 ## 6. Decision Process
 
 - **Rule-based scoring** — transparent, fixed rules combine genre match, mood match, energy closeness, acoustic preference, and small popularity/instrumentalness bonuses into a single score. Four scoring modes (`balanced`, `genre_first`, `mood_first`, `energy_focused`) re-weight the profile-based components.

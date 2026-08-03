@@ -20,6 +20,7 @@ from src.retriever import retrieve_candidates
 from src.recommender import recommend_songs
 from src.explainer import generate_explanations
 from src.evaluator import evaluate_recommendations
+from src.knowledge_retriever import retrieve_knowledge, apply_knowledge_to_profile
 from src.trace import AgentTrace, make_request_id, count_critical_failures
 from src.logging_config import get_logger
 
@@ -56,6 +57,9 @@ class RecommendationResult:
     # AgentTrace of observable workflow steps. Present for both successful and
     # failed runs. Records execution metadata only (no private reasoning).
     trace: Optional[Any] = None
+    # KnowledgeRetrievalResult from the RAG stretch feature (None when knowledge
+    # retrieval is disabled or unused). Backward compatible: defaults to None.
+    retrieved_knowledge: Optional[Any] = None
 
 
 class RecommendationAgent:
@@ -72,12 +76,20 @@ class RecommendationAgent:
         k: int = 5,
         mode: str = "balanced",
         retrieval_options: Optional[Dict[str, Any]] = None,
+        context: Optional[str] = None,
+        use_knowledge: bool = True,
     ) -> RecommendationResult:
         """Run the full recommendation workflow and return a structured result.
 
-        The steps are: validate input, retrieve candidates from the catalog,
-        then rank them with the existing ``recommend_songs``. Validation
-        failures return a result with ``success=False`` rather than raising.
+        The steps are: (optionally) retrieve custom knowledge and enrich the
+        profile, validate input, retrieve candidates from the catalog, then rank
+        them with the existing ``recommend_songs``. Validation failures return a
+        result with ``success=False`` rather than raising.
+
+        Knowledge retrieval (RAG stretch feature) normalizes genre aliases and
+        fills *missing* profile fields from listening-context knowledge. Explicit
+        user preferences are never overwritten. When ``use_knowledge`` is False
+        (or no knowledge matches), behavior is identical to the prior pipeline.
         """
         total_catalog_size = len(self.songs)
         self.logger.info(
@@ -99,8 +111,46 @@ class RecommendationAgent:
             },
         )
 
+        # Step 0: knowledge retrieval + profile enrichment (RAG). Only records a
+        # trace step and changes the profile when a knowledge source matches, so
+        # a plain request behaves exactly as before.
+        working_profile = profile
+        retrieved_knowledge = None
+        knowledge_warnings: List[str] = []
+        if use_knowledge:
+            genre_in = profile.get("favorite_genre") if isinstance(profile, dict) else None
+            retrieved_knowledge = retrieve_knowledge(genre=genre_in, context=context)
+            if retrieved_knowledge.sources_used:
+                working_profile, knowledge_warnings, applied_fields = apply_knowledge_to_profile(
+                    profile, retrieved_knowledge
+                )
+                trace.add_step(
+                    "knowledge_retrieval",
+                    "ok",
+                    {
+                        "sources_used": list(retrieved_knowledge.sources_used),
+                        "normalized_genre": retrieved_knowledge.normalized_genre,
+                        "inferred_context": retrieved_knowledge.inferred_context,
+                        "profile_fields_filled": applied_fields,
+                        "warning_count": len(knowledge_warnings),
+                    },
+                )
+
+        # Knowledge metadata is surfaced on every result (empty when unused).
+        knowledge_metadata = {
+            "knowledge_sources_used": (
+                list(retrieved_knowledge.sources_used) if retrieved_knowledge else []
+            ),
+            "normalized_genre": (
+                retrieved_knowledge.normalized_genre if retrieved_knowledge else None
+            ),
+            "inferred_context": (
+                retrieved_knowledge.inferred_context if retrieved_knowledge else None
+            ),
+        }
+
         # Step 1: validate input. Reduce k against the catalog size if needed.
-        validation = validate_input(profile, k, available_songs=total_catalog_size)
+        validation = validate_input(working_profile, k, available_songs=total_catalog_size)
         if not validation.is_valid:
             self.logger.info(
                 "Validation failed with %d error(s); returning early.",
@@ -121,15 +171,17 @@ class RecommendationAgent:
                 recommendations=[],
                 cleaned_profile=validation.cleaned_profile,
                 cleaned_k=validation.cleaned_k,
-                warnings=validation.warnings,
+                warnings=knowledge_warnings + validation.warnings,
                 errors=validation.errors,
                 metadata={
                     "total_catalog_size": total_catalog_size,
                     "retrieved_candidates": 0,
                     "returned_recommendations": 0,
                     "scoring_mode": mode,
+                    **knowledge_metadata,
                 },
                 trace=trace,
+                retrieved_knowledge=retrieved_knowledge,
             )
         self.logger.info(
             "Validation succeeded with %d warning(s).", len(validation.warnings)
@@ -215,17 +267,19 @@ class RecommendationAgent:
             recommendations=recommendations,
             cleaned_profile=validation.cleaned_profile,
             cleaned_k=validation.cleaned_k,
-            warnings=validation.warnings,
+            warnings=knowledge_warnings + validation.warnings,
             errors=validation.errors,
             metadata={
                 "total_catalog_size": total_catalog_size,
                 "retrieved_candidates": len(candidates),
                 "returned_recommendations": len(recommendations),
                 "scoring_mode": mode,
+                **knowledge_metadata,
             },
             explanations=explanations,
             reliability_report=reliability_report,
             trace=trace,
+            retrieved_knowledge=retrieved_knowledge,
         )
         trace.add_step("completion", "success", {"success": True})
         trace.final_status = "success"

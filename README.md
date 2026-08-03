@@ -964,6 +964,32 @@ Generate it with:
 python3 -m experiments.generate_agent_trace
 ```
 
+## Stretch Feature: RAG Enhancement
+
+The original retriever drew candidates from a single source: `data/songs.csv`. The RAG enhancement turns retrieval into a small multi-source system that consults the song catalog **plus two hand-authored local knowledge sources** before recommendations are generated — no external API, LLM, vector database, or internet service is used.
+
+- [knowledge/genre_aliases.json](knowledge/genre_aliases.json) — maps informal genre spellings to canonical catalog genres (e.g. `edm` → `electronic`).
+- [knowledge/listening_contexts.md](knowledge/listening_contexts.md) — maps listening contexts (studying, working out, relaxing, commuting, sleeping, party) to supported recommendation attributes.
+
+**How retrieved knowledge changes the pipeline.** Before validation, the agent (`use_knowledge=True`, on by default) normalizes a genre alias to its canonical genre and fills *only missing* profile fields from the matched listening context. Explicit user preferences are never overwritten (conflicts are recorded as warnings), and unsupported aliases or contexts fail safely with no invented data. The normalized/enriched profile then flows through the existing validation → retrieval → scoring → explanation → reliability pipeline, and the retrieval is recorded as an observable `knowledge_retrieval` trace step plus `retrieved_knowledge` on the result.
+
+**Verified before/after example (genre alias `edm`):**
+
+| | Baseline (`use_knowledge=False`) | Enhanced (`use_knowledge=True`) |
+|---|---|---|
+| Cleaned genre | `edm` (no catalog match) | `electronic` |
+| Retrieved candidates | 18 (fallback to whole catalog) | 1 (direct genre match) |
+| Preference alignment | 0.3333 | 1.0 |
+| Reliability score | 85 | 100 |
+
+Links: [experiments/run_rag_comparison.py](experiments/run_rag_comparison.py) · [experiments/rag_comparison_results.md](experiments/rag_comparison_results.md)
+
+Run it with:
+
+```bash
+python -m experiments.run_rag_comparison
+```
+
 # Repository Contents
 
 ```
