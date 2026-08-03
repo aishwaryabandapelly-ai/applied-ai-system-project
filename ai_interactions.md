@@ -245,3 +245,20 @@ The trace records seven observable steps:
 7. `completion` — success or failure
 
 The trace stores execution metadata only; it deliberately does not expose hidden reasoning or narrative. A generated example is saved at [experiments/agent_trace_example.json](experiments/agent_trace_example.json), produced by [experiments/generate_agent_trace.py](experiments/generate_agent_trace.py).
+
+---
+
+## Stretch Feature: Test Harness / Evaluation Script
+
+I added an automated evaluation harness so the extended system could be checked end-to-end, not just at the unit level. It runs a set of predefined profiles through the pipeline and reports how trustworthy each result is, giving a repeatable way to see how the system behaves across easy and hard cases.
+
+The harness uses the **real integrated workflow**: it constructs a `RecommendationAgent`, calls its `recommend` method, and reads the reliability report the agent already attaches. It does not re-implement or duplicate the evaluator's logic, so what it reports is exactly what the live system produced.
+
+For each profile it records the overall pass/fail checks, the reliability score, explanation coverage, preference alignment, artist and genre diversity, and result completeness. Running it required no user input and produced deterministic output.
+
+These results were what revealed the unsupported **k-pop** profile as the weakest relevance scenario: retrieval fell back safely and the run still passed all critical checks, but its reliability score dropped to 81 because preference alignment was low — the catalog contains no k-pop songs. Seeing that case scored honestly, rather than hidden, was the clearest signal the harness produced.
+
+The harness **complements but does not replace** the unit test suite: the unit tests verify individual components in isolation, while the harness measures the reliability of complete, integrated runs.
+
+- Script: [experiments/run_reliability_checks.py](experiments/run_reliability_checks.py)
+- Results: [experiments/reliability_results.md](experiments/reliability_results.md)
