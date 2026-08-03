@@ -917,6 +917,30 @@ Integrate services such as Spotify to retrieve real song metadata and recommenda
 
 ---
 
+# Stretch Features
+
+TuneGuide AI includes two stretch features beyond the core pipeline.
+
+## Test Harness / Evaluation Script
+
+An integrated reliability experiment runs several fixed profiles through the live agent and prints a compact reliability summary for each. It reuses the reliability report the agent already attaches, rather than duplicating evaluator logic.
+
+- Script: [experiments/run_reliability_checks.py](experiments/run_reliability_checks.py)
+- Results: [experiments/reliability_results.md](experiments/reliability_results.md)
+
+## Agentic Workflow Execution Trace
+
+The agent records a structured, deterministic trace of its observable workflow steps — `request_received`, `validation`, `retrieval`, `recommendation`, `explanation`, `reliability_evaluation`, and `completion` — capturing execution metadata only (component names, statuses, counts, warnings, and scores). It contains no private reasoning or chain-of-thought.
+
+- Example trace: [experiments/agent_trace_example.json](experiments/agent_trace_example.json)
+- Generator: [experiments/generate_agent_trace.py](experiments/generate_agent_trace.py)
+
+Generate it with:
+
+```bash
+python3 -m experiments.generate_agent_trace
+```
+
 # Repository Contents
 
 ```

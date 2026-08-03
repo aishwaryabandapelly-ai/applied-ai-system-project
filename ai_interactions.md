@@ -227,3 +227,21 @@ The penalty is greedy: songs are considered in base-score order and each penalty
 **How does the pattern appear in your final code?**
 
 <!-- Point to the relevant class or method -->
+
+---
+
+## Stretch Feature: Agentic Workflow Execution Trace
+
+TuneGuide AI records a structured execution trace of the recommendation agent's **observable workflow events** — not private reasoning or chain-of-thought. Each run captures component names, statuses, counts, warnings, and scores for every stage, so the workflow can be inspected and audited after the fact.
+
+The trace records seven observable steps:
+
+1. `request_received` — requested k, scoring mode, catalog size
+2. `validation` — passed/failed, warning count, error count
+3. `retrieval` — candidates found, filters used
+4. `recommendation` — candidates scored, recommendations returned
+5. `explanation` — explanations generated
+6. `reliability_evaluation` — reliability score, overall pass/fail, critical failure count
+7. `completion` — success or failure
+
+The trace stores execution metadata only; it deliberately does not expose hidden reasoning or narrative. A generated example is saved at [experiments/agent_trace_example.json](experiments/agent_trace_example.json), produced by [experiments/generate_agent_trace.py](experiments/generate_agent_trace.py).

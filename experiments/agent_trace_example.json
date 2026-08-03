@@ -1,0 +1,75 @@
+{
+  "request_id": "req_4af95a28ae95",
+  "final_status": "success",
+  "steps": [
+    {
+      "step": 1,
+      "component": "request_received",
+      "status": "ok",
+      "details": {
+        "requested_k": 5,
+        "scoring_mode": "balanced",
+        "catalog_size": 18
+      }
+    },
+    {
+      "step": 2,
+      "component": "validation",
+      "status": "passed",
+      "details": {
+        "warning_count": 0,
+        "error_count": 0
+      }
+    },
+    {
+      "step": 3,
+      "component": "retrieval",
+      "status": "ok",
+      "details": {
+        "candidates_found": 2,
+        "fallback_used": null,
+        "filters_used": {
+          "genre_filter": true,
+          "mood_filter": false,
+          "energy_window": 0.25,
+          "max_candidates": null
+        }
+      }
+    },
+    {
+      "step": 4,
+      "component": "recommendation",
+      "status": "ok",
+      "details": {
+        "candidates_scored": 2,
+        "recommendations_returned": 2
+      }
+    },
+    {
+      "step": 5,
+      "component": "explanation",
+      "status": "ok",
+      "details": {
+        "explanations_generated": 2
+      }
+    },
+    {
+      "step": 6,
+      "component": "reliability_evaluation",
+      "status": "passed",
+      "details": {
+        "reliability_score": 92,
+        "passed": true,
+        "critical_failure_count": 0
+      }
+    },
+    {
+      "step": 7,
+      "component": "completion",
+      "status": "success",
+      "details": {
+        "success": true
+      }
+    }
+  ]
+}

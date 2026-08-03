@@ -20,6 +20,7 @@ from src.retriever import retrieve_candidates
 from src.recommender import recommend_songs
 from src.explainer import generate_explanations
 from src.evaluator import evaluate_recommendations
+from src.trace import AgentTrace, make_request_id, count_critical_failures
 from src.logging_config import get_logger
 
 
@@ -52,6 +53,9 @@ class RecommendationResult:
     explanations: List[Any] = field(default_factory=list)
     # ReliabilityReport for a successful result; None for a failed/invalid request.
     reliability_report: Optional[Any] = None
+    # AgentTrace of observable workflow steps. Present for both successful and
+    # failed runs. Records execution metadata only (no private reasoning).
+    trace: Optional[Any] = None
 
 
 class RecommendationAgent:
@@ -83,6 +87,18 @@ class RecommendationAgent:
             total_catalog_size,
         )
 
+        # Observable execution trace (records metadata only, no reasoning).
+        trace = AgentTrace(request_id=make_request_id(profile, k, mode, total_catalog_size))
+        trace.add_step(
+            "request_received",
+            "ok",
+            {
+                "requested_k": k,
+                "scoring_mode": mode,
+                "catalog_size": total_catalog_size,
+            },
+        )
+
         # Step 1: validate input. Reduce k against the catalog size if needed.
         validation = validate_input(profile, k, available_songs=total_catalog_size)
         if not validation.is_valid:
@@ -90,6 +106,16 @@ class RecommendationAgent:
                 "Validation failed with %d error(s); returning early.",
                 len(validation.errors),
             )
+            trace.add_step(
+                "validation",
+                "failed",
+                {
+                    "warning_count": len(validation.warnings),
+                    "error_count": len(validation.errors),
+                },
+            )
+            trace.add_step("completion", "failure", {"success": False})
+            trace.final_status = "failure"
             return RecommendationResult(
                 success=False,
                 recommendations=[],
@@ -103,15 +129,40 @@ class RecommendationAgent:
                     "returned_recommendations": 0,
                     "scoring_mode": mode,
                 },
+                trace=trace,
             )
         self.logger.info(
             "Validation succeeded with %d warning(s).", len(validation.warnings)
+        )
+        trace.add_step(
+            "validation",
+            "passed",
+            {
+                "warning_count": len(validation.warnings),
+                "error_count": len(validation.errors),
+            },
         )
 
         # Step 2: retrieve candidates using the validated profile.
         options = dict(retrieval_options or {})
         candidates = retrieve_candidates(self.songs, validation.cleaned_profile, **options)
         self.logger.info("Retrieval returned %d candidate(s).", len(candidates))
+        trace.add_step(
+            "retrieval",
+            "ok",
+            {
+                "candidates_found": len(candidates),
+                # The retriever does not expose fallback usage in its return
+                # value, so this is recorded as null (not observable here).
+                "fallback_used": None,
+                "filters_used": {
+                    "genre_filter": options.get("genre_filter", True),
+                    "mood_filter": options.get("mood_filter", False),
+                    "energy_window": options.get("energy_window", 0.25),
+                    "max_candidates": options.get("max_candidates", None),
+                },
+            },
+        )
 
         # Step 3: rank candidates with the existing scoring pipeline.
         # No scoring/ranking/diversity logic is duplicated here.
@@ -122,10 +173,23 @@ class RecommendationAgent:
             mode=mode,
         )
         self.logger.info("Produced %d recommendation(s).", len(recommendations))
+        trace.add_step(
+            "recommendation",
+            "ok",
+            {
+                "candidates_scored": len(candidates),
+                "recommendations_returned": len(recommendations),
+            },
+        )
 
         # Step 3b: attach an evidence-based explanation per recommendation.
         # This does not alter the recommendations, their order, or their scores.
         explanations = generate_explanations(recommendations, validation.cleaned_profile)
+        trace.add_step(
+            "explanation",
+            "ok",
+            {"explanations_generated": len(explanations)},
+        )
 
         # Step 3c: evaluate reliability of the completed result (read-only).
         reliability_report = evaluate_recommendations(
@@ -134,6 +198,15 @@ class RecommendationAgent:
             validation.cleaned_profile,
             requested_k=validation.cleaned_k,
             retrieved_candidate_count=len(candidates),
+        )
+        trace.add_step(
+            "reliability_evaluation",
+            "passed" if reliability_report.passed else "failed",
+            {
+                "reliability_score": reliability_report.score,
+                "passed": reliability_report.passed,
+                "critical_failure_count": count_critical_failures(reliability_report),
+            },
         )
 
         # Step 4: package the result.
@@ -152,6 +225,9 @@ class RecommendationAgent:
             },
             explanations=explanations,
             reliability_report=reliability_report,
+            trace=trace,
         )
+        trace.add_step("completion", "success", {"success": True})
+        trace.final_status = "success"
         self.logger.info("Recommendation request complete: success=%s.", result.success)
         return result
