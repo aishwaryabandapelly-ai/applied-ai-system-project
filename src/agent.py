@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 from src.guardrails import validate_input
 from src.retriever import retrieve_candidates
 from src.recommender import recommend_songs
+from src.explainer import generate_explanations
 from src.logging_config import get_logger
 
 
@@ -44,6 +45,10 @@ class RecommendationResult:
     warnings: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    # One RecommendationExplanation per entry in ``recommendations`` (same order).
+    # Empty on failure. The ``recommendations`` field is unchanged for backward
+    # compatibility.
+    explanations: List[Any] = field(default_factory=list)
 
 
 class RecommendationAgent:
@@ -115,6 +120,10 @@ class RecommendationAgent:
         )
         self.logger.info("Produced %d recommendation(s).", len(recommendations))
 
+        # Step 3b: attach an evidence-based explanation per recommendation.
+        # This does not alter the recommendations, their order, or their scores.
+        explanations = generate_explanations(recommendations, validation.cleaned_profile)
+
         # Step 4: package the result.
         result = RecommendationResult(
             success=True,
@@ -129,6 +138,7 @@ class RecommendationAgent:
                 "returned_recommendations": len(recommendations),
                 "scoring_mode": mode,
             },
+            explanations=explanations,
         )
         self.logger.info("Recommendation request complete: success=%s.", result.success)
         return result
