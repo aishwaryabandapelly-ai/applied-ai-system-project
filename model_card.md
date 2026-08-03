@@ -90,7 +90,7 @@ profile fields; explicit user preferences always take priority.
 
 TuneGuide AI is validated by an automated test suite and by integrated reliability experiments run through the live agent.
 
-- **114 automated tests passed; 0 failed.**
+- **166 automated tests passed; 0 failed.**
 - **Four integrated reliability experiments** were run through the agent (via `experiments/run_reliability_checks.py`).
 - **Reliability scores: 92, 88, 100, 81.**
 - **Lowest-performing case:** the no-direct-catalog-match profile (requested k-pop, which is absent from the catalog), where retrieval fell back safely but preference alignment was low.

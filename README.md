@@ -150,7 +150,7 @@ using Python's built-in logging framework.
 
 ### Automated Testing
 
-The project currently contains 114 automated tests, covering recommendation scoring, retrieval, guardrails, explanation generation, reliability evaluation, logging, orchestration, and regression protection.
+The project currently contains 166 automated tests, covering recommendation scoring, retrieval, guardrails, explanation generation, reliability evaluation, logging, orchestration, and regression protection.
 
 ---
 
@@ -183,15 +183,21 @@ Reliability Evaluator
 Final Recommendation
 ```
 
-A detailed Mermaid architecture diagram is available in:
+High-level flow:
 
+```mermaid
+flowchart TD
+    A[User Request and Profile] --> B[Input Validation and Guardrails]
+    B --> C[Preference Interpretation and Knowledge Retrieval]
+    C --> D[Candidate Retrieval]
+    D --> E[Recommendation Agent]
+    E --> F[Scoring, Ranking, and Diversity]
+    F --> G[Explanation Generation]
+    G --> H[Reliability Evaluation]
+    H --> I[Final Recommendations and Trace]
 ```
-diagrams/architecture.mmd
-```
 
----
-
-![TuneGuide AI Architecture](assets/architecture.png)
+**[View the Mermaid architecture source](diagrams/architecture.mmd)**
 
 # Project Structure
 
@@ -408,7 +414,7 @@ Run the complete automated test suite.
 python3 -m pytest -q
 ```
 
-The current project contains more than **110 automated tests** covering every major module.
+The current project contains **166 automated tests** covering every major module.
 
 ---
 
@@ -949,7 +955,7 @@ Run it with:
 python3 -m experiments.run_reliability_checks
 ```
 
-**Verified results:** across **4 predefined profiles**, all **4 runs completed successfully** with reliability scores of **92, 88, 100, and 81**, and **all critical checks passed**. After the execution-trace stretch feature was added, **124 total automated tests currently pass**.
+**Verified results:** across **4 predefined profiles**, all **4 runs completed successfully** with reliability scores of **92, 88, 100, and 81**, and **all critical checks passed**. With all stretch features complete, **166 total automated tests currently pass**.
 
 ## Agentic Workflow Execution Trace
 

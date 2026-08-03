@@ -2,14 +2,14 @@
 
 ## Evaluation Summary
 
-- **114 automated tests passed.**
+- **166 automated tests passed.**
 - **0 automated tests failed.**
 - The integrated reliability experiment evaluated **four profiles**.
 - **All four** recommendation runs completed successfully.
 - **All four** overall reliability reports passed their critical checks.
 - The lowest-performing case was the **no-direct-catalog-match** profile, because preference alignment was low after the retriever fell back to relaxed constraints.
 
-114 out of 114 automated tests passed. Four out of four integrated recommendation runs completed successfully and passed all critical reliability checks. Reliability scores ranged from 81 to 100. The system performed best when the catalog contained a direct genre and mood match, and scored lower when retrieval had to fall back because the requested genre was unavailable.
+166 out of 166 automated tests passed. Four out of four integrated recommendation runs completed successfully and passed all critical reliability checks. Reliability scores ranged from 81 to 100. The system performed best when the catalog contained a direct genre and mood match, and scored lower when retrieval had to fall back because the requested genre was unavailable.
 
 *Results reproduced from `python3 -m experiments.run_reliability_checks` and the full `pytest` suite.*
 
@@ -25,8 +25,8 @@
 | Explanation generator | Evidence extraction, deterministic confidence, list/string reason formats, malformed input, and one-to-one explanation coverage | Pass |
 | Reliability evaluator | Duplicate detection, explanation coverage, score validity/order, preference alignment, diversity metrics, completeness, and deterministic scoring | Pass |
 
-- **Total tests: 114**
-- **Passed: 114**
+- **Total tests: 166**
+- **Passed: 166**
 - **Failed: 0**
 
 ## Integrated Reliability Experiments
