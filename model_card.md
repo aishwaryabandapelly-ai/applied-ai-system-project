@@ -168,6 +168,30 @@ AI can meaningfully accelerate implementation, but human review is still require
 
 ---
 
+## Reflection and Ethics
+
+### 1. What are the limitations or biases in your system?
+
+Working on TuneGuide AI made its limitations concrete for me. The catalog is a small, fictional dataset of only 18 songs, so several genres and moods appear just once or twice and some profiles simply have few strong candidates. Every recommendation is metadata-only: I score hand-authored tags and numbers, with no lyrics, no audio understanding, and no listening history to draw on. The scoring rules themselves carry bias — genre-first weighting gives genre the largest fixed bonus, so it can over-prioritize genre over mood, energy, or acousticness, and the popularity bonus can nudge already-popular songs upward. The diversity penalties I kept from the original recommender reduce repeated artists and genres, but they cannot eliminate the underlying imbalance in a small catalog. Ultimately it is a rule-based system, so it cannot capture the complex, shifting musical preferences a real listener has.
+
+### 2. Could your AI be misused, and how would you prevent that?
+
+TuneGuide AI is an educational recommendation system, and I want its boundaries to be clear. It should not be used for production music streaming, and it should never be used to infer emotions, personality, or mental health from someone's music choices. It is also not built for important decision-making of any kind. Several implemented parts of the system already reduce the chance of misuse. Input validation rejects or safely repairs bad input before it reaches the pipeline, so the system cannot be pushed into undefined behavior. The scoring is transparent, and every recommendation ships with evidence-based explanations, so no result is presented as an unexplained verdict. The reliability evaluation reports how trustworthy each result is instead of hiding weak cases. Most importantly, human interpretation remains central: the outputs are explainable suggestions to be judged by the user, not authoritative conclusions.
+
+### 3. What surprised you while testing your AI's reliability?
+
+The most instructive moment was the unsupported k-pop profile — a request for a genre the catalog does not contain. I expected either an error or an empty list, but the retrieval fallback relaxed its constraints and still returned alternatives, so the run completed successfully. What surprised me was that the reliability score still dropped (to 81) because preference alignment was honestly low. The system did not pretend the alternatives were a good match; it stayed robust while openly reporting reduced recommendation quality. That taught me that robustness and honesty are separate properties, and a good system should have both. I was also struck by how much the automated regression tests earned their place: they protected the original recommender's behavior at every step as I added new modules, so I could extend the system confidently without silently breaking what already worked.
+
+### 4. Describe your collaboration with AI during this project.
+
+I used Claude Code inside Visual Studio Code as a coding assistant throughout this project. It helped me inspect the repository, design the implementation roadmap, generate tests, implement the modular components, and improve the documentation. I did not accept its output blindly: I reviewed every suggestion, compared diffs, ran the full test suite, and verified results before keeping any change.
+
+The single most helpful suggestion was the phased implementation order: regression tests → guardrails → retriever → recommendation agent → explanation generator → reliability evaluator. Writing regression tests first locked in the original recommender's behavior, and building one isolated module per phase meant every addition was tested on its own before the next began. This dramatically reduced the risk of breaking the working recommender, because each phase ended with all prior tests still passing.
+
+Not every suggestion was correct. One AI-generated README draft contained sample `target_energy` values that did not exactly match the experiment configuration. I compared the documentation against `experiments/run_reliability_checks.py`, found the mismatch, and corrected it. The lesson stuck with me: AI-generated documentation should always be verified against the actual source, not accepted automatically just because it reads confidently.
+
+---
+
 ## 15. Responsible Use Summary
 
 TuneGuide AI is an **educational, transparent recommendation system**. Its recommendations are explainable suggestions grounded in song metadata and stated preferences — not objective judgments about music or listeners. Outputs should be interpreted with the system's limitations in mind, and the final decision always remains with the user.
