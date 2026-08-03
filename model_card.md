@@ -60,6 +60,21 @@ Beyond `data/songs.csv`, the enhanced retrieval consults two hand-authored local
 
 These sources are small, hand-authored, and limited; incorrect or incomplete mappings can affect recommendations. They are used only to normalize genre aliases and to fill *missing* profile fields. Explicit user preferences always take priority over retrieved context, and unsupported aliases or contexts fail safely with no invented data.
 
+### Specialization: Natural-Language Preference Interpreter (stretch feature)
+
+The system includes a specialization layer that turns a natural-language request
+(e.g. "I'm studying for my exam.") into a structured preference profile. It is
+**not a learned or fine-tuned model**: it is deterministic keyword pattern
+matching, documented in `src/preference_interpreter.py`, inspired by a small
+synthetic dataset (`specialization/preference_examples.json`, ~24 hand-authored
+examples). No AI model, randomness, or external service is involved.
+
+Limitations: the rules and dataset are small and hand-authored, so requests
+outside the documented keywords are not interpreted (they fall back to Low
+confidence with no inference), and inferred profiles reflect the author's
+mappings rather than a user's true intent. The interpreter fills only *missing*
+profile fields; explicit user preferences always take priority.
+
 ## 6. Decision Process
 
 - **Rule-based scoring** — transparent, fixed rules combine genre match, mood match, energy closeness, acoustic preference, and small popularity/instrumentalness bonuses into a single score. Four scoring modes (`balanced`, `genre_first`, `mood_first`, `energy_focused`) re-weight the profile-based components.

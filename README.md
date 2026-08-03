@@ -990,6 +990,42 @@ Run it with:
 python -m experiments.run_rag_comparison
 ```
 
+# Stretch Feature: Fine-Tuning / Specialization
+
+This project **does not fine-tune a neural model**. Instead, as permitted by the rubric, it specializes the system's behavior with:
+
+- **few-shot patterns** — documented deterministic keyword rules,
+- a **synthetic dataset** — [specialization/preference_examples.json](specialization/preference_examples.json) (~24 hand-authored examples),
+- **deterministic preference interpretation** — a natural-language request is turned into a structured profile with no model, no randomness, and no external service.
+
+The interpreter runs first in the agent (`natural_language_request=...`), filling **only missing** profile fields; explicit user values always take precedence. It is recorded as an observable `preference_interpretation` trace step.
+
+**Before**
+
+```
+"I'm studying."  →  baseline (no interpreter)  →  no structured profile  →  validation fails, no recommendations
+```
+
+**After**
+
+```
+"I'm studying."  →  interpreter  →  favorite_genre = "lofi"
+                                    favorite_mood  = "focused"
+                                    target_energy  = 0.3
+                                    likes_acoustic = true
+                 →  validation passes  →  3 candidates, reliability 86, better recommendations
+```
+
+Across 8 representative requests, every baseline run failed (no structured profile) while every specialized run succeeded with reliability scores of 86–100.
+
+Links: [specialization/preference_examples.json](specialization/preference_examples.json) · [experiments/run_specialization_comparison.py](experiments/run_specialization_comparison.py) · [experiments/specialization_results.md](experiments/specialization_results.md)
+
+Run it with:
+
+```bash
+python -m experiments.run_specialization_comparison
+```
+
 # Repository Contents
 
 ```

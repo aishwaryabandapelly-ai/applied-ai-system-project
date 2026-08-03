@@ -1,0 +1,146 @@
+[
+  {
+    "user_request": "I'm studying for my robotics exam.",
+    "profile": {"favorite_genre": "lofi", "favorite_mood": "focused", "target_energy": 0.3, "likes_acoustic": true},
+    "context": "studying",
+    "notes": "Study/exam sessions map to calm, focused, low-energy instrumental music."
+  },
+  {
+    "user_request": "I need relaxing music while reading.",
+    "profile": {"favorite_genre": "ambient", "favorite_mood": "relaxed", "target_energy": 0.3, "likes_acoustic": true},
+    "context": "relaxing",
+    "notes": "Reading and relaxing map to calm, low-energy ambient music."
+  },
+  {
+    "user_request": "I'm driving home after work.",
+    "profile": {"favorite_genre": "pop", "favorite_mood": "uplifting", "target_energy": 0.6, "likes_acoustic": false},
+    "context": "commuting",
+    "notes": "Commuting maps to mid-energy uplifting pop."
+  },
+  {
+    "user_request": "I'm lifting weights.",
+    "profile": {"favorite_genre": "electronic", "favorite_mood": "intense", "target_energy": 0.9, "likes_acoustic": false},
+    "context": "working out",
+    "notes": "Workouts map to high-energy, intense, non-acoustic music."
+  },
+  {
+    "user_request": "I'm coding late at night.",
+    "profile": {"favorite_genre": "lofi", "favorite_mood": "focused", "target_energy": 0.4, "likes_acoustic": false},
+    "context": "studying",
+    "notes": "Coding maps to focused lofi, slightly higher energy than studying."
+  },
+  {
+    "user_request": "I need background music.",
+    "profile": {"favorite_genre": "ambient", "favorite_mood": "relaxed", "target_energy": 0.3, "likes_acoustic": true},
+    "context": "relaxing",
+    "notes": "Background listening maps to unobtrusive ambient music."
+  },
+  {
+    "user_request": "I want something nostalgic.",
+    "profile": {"favorite_genre": "indie pop", "favorite_mood": "nostalgic", "target_energy": 0.5, "likes_acoustic": false},
+    "context": "",
+    "notes": "Nostalgia is a mood descriptor; maps to indie pop with a nostalgic mood."
+  },
+  {
+    "user_request": "I'm cleaning my apartment.",
+    "profile": {"favorite_genre": "pop", "favorite_mood": "happy", "target_energy": 0.7, "likes_acoustic": false},
+    "context": "",
+    "notes": "Chores map to upbeat, happy pop."
+  },
+  {
+    "user_request": "I'm feeling energetic.",
+    "profile": {"favorite_genre": "electronic", "favorite_mood": "euphoric", "target_energy": 0.85, "likes_acoustic": false},
+    "context": "",
+    "notes": "Energetic is an energy descriptor; maps to high-energy euphoric electronic."
+  },
+  {
+    "user_request": "I don't want vocals.",
+    "profile": {"favorite_genre": "ambient", "favorite_mood": "chill", "target_energy": 0.4, "likes_acoustic": true},
+    "context": "",
+    "notes": "No vocals maps to instrumental-leaning ambient; the catalog has no explicit vocals flag."
+  },
+  {
+    "user_request": "I need focus.",
+    "profile": {"favorite_genre": "lofi", "favorite_mood": "focused", "target_energy": 0.35, "likes_acoustic": true},
+    "context": "studying",
+    "notes": "Focus maps to calm focused lofi."
+  },
+  {
+    "user_request": "I'm preparing for an interview.",
+    "profile": {"favorite_genre": "pop", "favorite_mood": "confident", "target_energy": 0.6, "likes_acoustic": false},
+    "context": "",
+    "notes": "Interviews map to confident, mid-energy pop."
+  },
+  {
+    "user_request": "I'm going to a party tonight.",
+    "profile": {"favorite_genre": "pop", "favorite_mood": "euphoric", "target_energy": 0.9, "likes_acoustic": false},
+    "context": "party",
+    "notes": "Parties map to high-energy euphoric pop."
+  },
+  {
+    "user_request": "Help me fall asleep.",
+    "profile": {"favorite_genre": "ambient", "favorite_mood": "relaxed", "target_energy": 0.15, "likes_acoustic": true},
+    "context": "sleeping",
+    "notes": "Sleep maps to very low-energy ambient."
+  },
+  {
+    "user_request": "I'm on my morning commute.",
+    "profile": {"favorite_genre": "pop", "favorite_mood": "uplifting", "target_energy": 0.6, "likes_acoustic": false},
+    "context": "commuting",
+    "notes": "Commute maps to mid-energy uplifting pop."
+  },
+  {
+    "user_request": "I want calm acoustic songs.",
+    "profile": {"favorite_genre": "folk", "favorite_mood": "relaxed", "target_energy": 0.35, "likes_acoustic": true},
+    "context": "relaxing",
+    "notes": "Explicit acoustic preference maps to acoustic-leaning folk."
+  },
+  {
+    "user_request": "Give me something intense for my workout.",
+    "profile": {"favorite_genre": "electronic", "favorite_mood": "intense", "target_energy": 0.9, "likes_acoustic": false},
+    "context": "working out",
+    "notes": "Workout intensity maps to high-energy electronic."
+  },
+  {
+    "user_request": "I'm doing homework.",
+    "profile": {"favorite_genre": "lofi", "favorite_mood": "focused", "target_energy": 0.3, "likes_acoustic": true},
+    "context": "studying",
+    "notes": "Homework maps to focused lofi."
+  },
+  {
+    "user_request": "I need to concentrate.",
+    "profile": {"favorite_genre": "lofi", "favorite_mood": "focused", "target_energy": 0.35, "likes_acoustic": true},
+    "context": "studying",
+    "notes": "Concentration maps to focused lofi."
+  },
+  {
+    "user_request": "I want upbeat dance music.",
+    "profile": {"favorite_genre": "electronic", "favorite_mood": "euphoric", "target_energy": 0.85, "likes_acoustic": false},
+    "context": "party",
+    "notes": "Dance maps to high-energy euphoric electronic."
+  },
+  {
+    "user_request": "Something for late-night coding.",
+    "profile": {"favorite_genre": "lofi", "favorite_mood": "focused", "target_energy": 0.4, "likes_acoustic": false},
+    "context": "studying",
+    "notes": "Coding maps to focused lofi."
+  },
+  {
+    "user_request": "I'm working out at the gym.",
+    "profile": {"favorite_genre": "electronic", "favorite_mood": "intense", "target_energy": 0.9, "likes_acoustic": false},
+    "context": "working out",
+    "notes": "Gym maps to high-energy intense electronic."
+  },
+  {
+    "user_request": "I need instrumental music with no lyrics.",
+    "profile": {"favorite_genre": "ambient", "favorite_mood": "chill", "target_energy": 0.4, "likes_acoustic": true},
+    "context": "",
+    "notes": "Instrumental/no lyrics maps to instrumental-leaning ambient."
+  },
+  {
+    "user_request": "Play something to wind down before bed.",
+    "profile": {"favorite_genre": "ambient", "favorite_mood": "relaxed", "target_energy": 0.15, "likes_acoustic": true},
+    "context": "sleeping",
+    "notes": "Winding down before bed maps to very low-energy ambient."
+  }
+]

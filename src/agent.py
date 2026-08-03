@@ -21,6 +21,7 @@ from src.recommender import recommend_songs
 from src.explainer import generate_explanations
 from src.evaluator import evaluate_recommendations
 from src.knowledge_retriever import retrieve_knowledge, apply_knowledge_to_profile
+from src.preference_interpreter import interpret_request, merge_interpreted_profile
 from src.trace import AgentTrace, make_request_id, count_critical_failures
 from src.logging_config import get_logger
 
@@ -60,6 +61,9 @@ class RecommendationResult:
     # KnowledgeRetrievalResult from the RAG stretch feature (None when knowledge
     # retrieval is disabled or unused). Backward compatible: defaults to None.
     retrieved_knowledge: Optional[Any] = None
+    # InterpretedPreference from the specialization stretch feature (None unless a
+    # natural_language_request was provided). Backward compatible: defaults to None.
+    interpreted_preference: Optional[Any] = None
 
 
 class RecommendationAgent:
@@ -78,6 +82,7 @@ class RecommendationAgent:
         retrieval_options: Optional[Dict[str, Any]] = None,
         context: Optional[str] = None,
         use_knowledge: bool = True,
+        natural_language_request: Optional[str] = None,
     ) -> RecommendationResult:
         """Run the full recommendation workflow and return a structured result.
 
@@ -111,14 +116,35 @@ class RecommendationAgent:
             },
         )
 
-        # Step 0: knowledge retrieval + profile enrichment (RAG). Only records a
+        working_profile = dict(profile) if isinstance(profile, dict) else profile
+
+        # Step 0a: natural-language interpretation (specialization). Only runs and
+        # records a trace step when a request is provided; fills only missing
+        # profile fields (explicit values always take precedence).
+        interpreted_preference = None
+        if natural_language_request is not None:
+            interpreted_preference = interpret_request(natural_language_request)
+            working_profile, interpreted_fields = merge_interpreted_profile(
+                working_profile, interpreted_preference
+            )
+            trace.add_step(
+                "preference_interpretation",
+                "ok",
+                {
+                    "confidence": interpreted_preference.confidence,
+                    "matched_examples": len(interpreted_preference.matched_examples),
+                    "specialization_used": interpreted_preference.specialization_used,
+                    "profile_fields_filled": interpreted_fields,
+                },
+            )
+
+        # Step 0b: knowledge retrieval + profile enrichment (RAG). Only records a
         # trace step and changes the profile when a knowledge source matches, so
         # a plain request behaves exactly as before.
-        working_profile = profile
         retrieved_knowledge = None
         knowledge_warnings: List[str] = []
         if use_knowledge:
-            genre_in = profile.get("favorite_genre") if isinstance(profile, dict) else None
+            genre_in = working_profile.get("favorite_genre") if isinstance(working_profile, dict) else None
             retrieved_knowledge = retrieve_knowledge(genre=genre_in, context=context)
             if retrieved_knowledge.sources_used:
                 working_profile, knowledge_warnings, applied_fields = apply_knowledge_to_profile(
@@ -136,7 +162,7 @@ class RecommendationAgent:
                     },
                 )
 
-        # Knowledge metadata is surfaced on every result (empty when unused).
+        # Knowledge + specialization metadata surfaced on every result.
         knowledge_metadata = {
             "knowledge_sources_used": (
                 list(retrieved_knowledge.sources_used) if retrieved_knowledge else []
@@ -146,6 +172,12 @@ class RecommendationAgent:
             ),
             "inferred_context": (
                 retrieved_knowledge.inferred_context if retrieved_knowledge else None
+            ),
+            "specialization_used": (
+                interpreted_preference.specialization_used if interpreted_preference else False
+            ),
+            "interpretation_confidence": (
+                interpreted_preference.confidence if interpreted_preference else None
             ),
         }
 
@@ -182,6 +214,7 @@ class RecommendationAgent:
                 },
                 trace=trace,
                 retrieved_knowledge=retrieved_knowledge,
+                interpreted_preference=interpreted_preference,
             )
         self.logger.info(
             "Validation succeeded with %d warning(s).", len(validation.warnings)
@@ -280,6 +313,7 @@ class RecommendationAgent:
             reliability_report=reliability_report,
             trace=trace,
             retrieved_knowledge=retrieved_knowledge,
+            interpreted_preference=interpreted_preference,
         )
         trace.add_step("completion", "success", {"success": True})
         trace.final_status = "success"
