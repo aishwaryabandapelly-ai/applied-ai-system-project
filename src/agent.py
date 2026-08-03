@@ -19,6 +19,7 @@ from src.guardrails import validate_input
 from src.retriever import retrieve_candidates
 from src.recommender import recommend_songs
 from src.explainer import generate_explanations
+from src.evaluator import evaluate_recommendations
 from src.logging_config import get_logger
 
 
@@ -49,6 +50,8 @@ class RecommendationResult:
     # Empty on failure. The ``recommendations`` field is unchanged for backward
     # compatibility.
     explanations: List[Any] = field(default_factory=list)
+    # ReliabilityReport for a successful result; None for a failed/invalid request.
+    reliability_report: Optional[Any] = None
 
 
 class RecommendationAgent:
@@ -124,6 +127,15 @@ class RecommendationAgent:
         # This does not alter the recommendations, their order, or their scores.
         explanations = generate_explanations(recommendations, validation.cleaned_profile)
 
+        # Step 3c: evaluate reliability of the completed result (read-only).
+        reliability_report = evaluate_recommendations(
+            recommendations,
+            explanations,
+            validation.cleaned_profile,
+            requested_k=validation.cleaned_k,
+            retrieved_candidate_count=len(candidates),
+        )
+
         # Step 4: package the result.
         result = RecommendationResult(
             success=True,
@@ -139,6 +151,7 @@ class RecommendationAgent:
                 "scoring_mode": mode,
             },
             explanations=explanations,
+            reliability_report=reliability_report,
         )
         self.logger.info("Recommendation request complete: success=%s.", result.success)
         return result
